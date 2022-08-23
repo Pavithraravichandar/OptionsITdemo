@@ -53,9 +53,11 @@ stages:
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
-- stage: Deploy
+- stage: Infra
+  displayName: Deploy resources
   jobs:
-  - job: Deploy
+  - job: DeployBicepTemplate
+    displayName: Deploy Bicep Template
 
     pool:
       vmImage: 'windows-latest'
@@ -76,7 +78,15 @@ stages:
           az group create --name $(ResourceGroupName) --location $(location)
           az deployment group create --name $(Build.BuildNumber) --resource-group $(ResourceGroupName) --template-file $(System.ArtifactsDirectory)/bicep/TailspinResources.bicep --parameters websiteName=$(WebsiteName) hostingPlanName=$(HostingPlan)
 
- 
+- stage: DeployToDev&Stage
+  displayName: Deploy To Dev And staging environment
+  jobs:
+  - deployment: DeployTODev
+    displayName: Deploy To Dev
+
+    pool:
+      vmImage: 'windows-latest'
+
     - task: AzureRmWebAppDeployment@4
       inputs:
         ConnectionType: 'AzureRM'
@@ -84,3 +94,12 @@ stages:
         appType: 'webApp'
         WebAppName: '$(WebsiteName)'
         packageForLinux: '$(System.ArtifactsDirectory)/**/*.zip'
+
+- stage: DeployToPROD
+  displayName: Deploy To PROD
+  jobs:
+  - deployment: DeployTOPROD
+    displayName: Deploy To PROD
+
+    pool:
+      vmImage: 'windows-latest'
