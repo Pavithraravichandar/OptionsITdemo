@@ -37,6 +37,11 @@ steps:
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourceDirectory)'
+    Contents: '**.bicep'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/Bicep'
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
