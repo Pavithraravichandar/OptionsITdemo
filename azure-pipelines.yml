@@ -39,7 +39,7 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(Build.SourceDirectory)'
+    SourceFolder: '$(Build.SourcesDirectory)'
     Contents: '**.bicep'
     TargetFolder: '$(Build.ArtifactStagingDirectory)/Bicep'
 - task: PublishBuildArtifacts@1
