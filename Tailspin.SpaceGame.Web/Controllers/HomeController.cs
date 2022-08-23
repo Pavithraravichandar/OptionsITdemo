@@ -13,6 +13,7 @@ namespace TailSpin.SpaceGame.Web.Controllers
     {
         // High score repository.
         //pull
+        //fetch
         private readonly IDocumentDBRepository<Score> _scoreRepository;
         // User profile repository.
         private readonly IDocumentDBRepository<Profile> _profileRespository;
