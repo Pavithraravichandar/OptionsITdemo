@@ -66,3 +66,21 @@ stages:
         buildType: 'current'
         artifactName: 'drop'
         targetPath: '$(System.ArtifactsDirectory)'
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'PAVR RDC Internal Subscription(37ef8c03-e8ac-4ea3-91dd-f5ab71cd09d3)'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name $(ResourceGroupName) --location $(location)
+          az deployment group create --name $(Build.BuildNumber) --resource-group $(ResourceGroupName) --template-file $(System.ArtifactsDirectory)/bicep/tailspin.bicep --parameters websiteName=$(WebsiteName) hostingPlanName=$(HostingPlan)
+
+ 
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'PAVR RDC Internal Subscription(37ef8c03-e8ac-4ea3-91dd-f5ab71cd09d3)'
+        appType: 'webApp'
+        WebAppName: '$(WebsiteName)'
+        packageForLinux: '$(System.ArtifactsDirectory)/**/*.zip'
