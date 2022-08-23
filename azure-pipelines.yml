@@ -78,7 +78,7 @@ stages:
           az group create --name $(ResourceGroupName) --location $(location)
           az deployment group create --name $(Build.BuildNumber) --resource-group $(ResourceGroupName) --template-file $(System.ArtifactsDirectory)/bicep/TailspinResources.bicep --parameters websiteName=$(WebsiteName) hostingPlanName=$(HostingPlan)
 
-- stage: DeployToDev&Stage
+- stage: DeployToDevandStage
   displayName: Deploy To Dev And staging environment
   jobs:
   - deployment: DeployTODev
