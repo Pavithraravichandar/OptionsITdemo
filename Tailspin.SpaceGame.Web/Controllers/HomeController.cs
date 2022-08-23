@@ -21,6 +21,7 @@ namespace TailSpin.SpaceGame.Web.Controllers
             IDocumentDBRepository<Profile> profileRespository
             )
         {
+            //commit
             _scoreRepository = scoreRepository;
             _profileRespository = profileRespository;
         }
