@@ -74,7 +74,7 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           az group create --name $(ResourceGroupName) --location $(location)
-          az deployment group create --name $(Build.BuildNumber) --resource-group $(ResourceGroupName) --template-file $(System.ArtifactsDirectory)/bicep/tailspinResources.bicep --parameters websiteName=$(WebsiteName) hostingPlanName=$(HostingPlan)
+          az deployment group create --name $(Build.BuildNumber) --resource-group $(ResourceGroupName) --template-file $(System.ArtifactsDirectory)/bicep/TailspinResources.bicep --parameters websiteName=$(WebsiteName) hostingPlanName=$(HostingPlan)
 
  
     - task: AzureRmWebAppDeployment@4
