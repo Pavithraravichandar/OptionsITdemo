@@ -1,0 +1,92 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger: none
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+
+
+    pool:
+      vmImage: 'windows-latest'
+      demands:
+      - msbuild
+      - visualstudio
+
+    variables:
+      solution: '**/*.sln'
+      buildPlatform: 'Any CPU'
+      buildConfiguration: 'Release'
+
+    steps:
+    - task: NuGetToolInstaller@1
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(solution)'
+
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: '**.bicep'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/bicep'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        artifact: 'drop'
+        publishLocation: 'pipeline'
+
+- stage: Release
+  jobs:
+  - job: Release
+
+
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        artifactName: 'drop'
+        targetPath: '$(System.ArtifactsDirectory)'
+
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: 'OptionsITdemo'
+        KeyVaultName: 'optionITdemo'
+        SecretsFilter: '*'
+        RunAsPreJob: false
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'PAVR RDC Internal Subscription(37ef8c03-e8ac-4ea3-91dd-f5ab71cd09d3)'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name $(ResourceGroupName) --location $(location)
+          az deployment group create --name $(Build.BuildNumber) --resource-group $(ResourceGroupName) --template-file $(System.ArtifactsDirectory)/bicep/tailspin.bicep --parameters websiteName=$(WebsiteName) hostingPlanName=$(HostingPlan)
+
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'PAVR RDC Internal Subscription(37ef8c03-e8ac-4ea3-91dd-f5ab71cd09d3)'
+        appType: 'webApp'
+        WebAppName: '$(WebsiteName)'
+        packageForLinux: '$(System.ArtifactsDirectory)/**/*.zip'
