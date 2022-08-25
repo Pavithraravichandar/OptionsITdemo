@@ -38,12 +38,12 @@ jobs:
     - name: Download a Build Artifact
       uses: actions/download-artifact@v2.0.8
       with:
-        name: webapp
-        path: webapp
+       name: webapp
+       path: webapp
     - name: Azure Login
       uses: Azure/login@v1
       with:
-       creds: ${{ secrets.AZURE_CREDENTIALS }}
+       creds: ${{ secrets.AZURE_CREDENTIALS}}
     - name: Deploy web app
       uses: azure/webapps-deploy@v2
       with:
@@ -51,4 +51,4 @@ jobs:
         package: webapp
     - name: logout az cli
       run: az logout
-      
+
