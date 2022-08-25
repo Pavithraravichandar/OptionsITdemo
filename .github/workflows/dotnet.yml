@@ -31,5 +31,24 @@ jobs:
        name: webapp
        path: website/**
        if-no-files-found: warn
-
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v2.0.8
+      with:
+        name: webapp
+        path: webapp
+    - name: Azure Login
+      uses: Azure/login@v1
+      with:
+       creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Deploy web app
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: demopavroptionITwebappws
+        package: webapp
+    - name: logout az cli
+      run: az logout
       
